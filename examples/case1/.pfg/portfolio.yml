@@ -1,0 +1,13 @@
+cache_dir: .pfg
+datetime_format: "%Y-%m-%d"
+names:
+  github: atu4403
+  # pypi: atu4403
+  qiita: atu4403
+  zenn: atu4403
+apis:
+  gh_user:
+    url: https://api.github.com/users/atu4403
+    type: json
+offline: true
+template: example/portfolio.j2

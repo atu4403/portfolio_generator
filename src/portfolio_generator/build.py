@@ -1,0 +1,45 @@
+import os
+from pathlib import Path
+import pathlib
+import yaml
+from jinja2 import Environment, FileSystemLoader
+import adash as _
+from .hub import hub_with_key, hub_with_type
+from .j2filter import filters
+from .pfg import Conf
+
+
+class Build:
+    def __init__(self, path: str = "portfolio.yml", offline: bool = False) -> None:
+        c = Conf()
+        self.offline = offline
+        self.conf = c.load(path)
+        self.conf_dir = c.dot.search_dir
+        self.cache_dir = c.dot.search_cache_dir
+        self.values = {}
+        for key in self.conf.get("names", []):
+            self.values[key] = self._get_json(key)
+        for key in self.conf.get("apis", []):
+            self.values[key] = self._get_json("__" + key)
+
+    def _get_json(self, key):
+        conf = self.conf
+        json_path = Path(self.cache_dir) / f"{key}.json"
+        if (not json_path.exists()) or (not self.offline):
+            if key.startswith("__"):
+                d = conf["apis"][key]
+                j = hub_with_type(d.get("type"), d.get("url"))
+            else:
+                j = hub_with_key(key, conf["names"][key])
+            _.json_write(j, json_path, overwrite=True)
+            return j
+        return _.json_read(json_path)
+
+    def execute(self):
+        env = Environment(loader=FileSystemLoader("."))
+        for key, filter in filters.items():
+            env.filters[key] = filter
+        template_path = self.conf_dir / self.conf["template"]
+        template = env.get_template(str(template_path))
+        ren_s = template.render(self.values)
+        print(ren_s)
