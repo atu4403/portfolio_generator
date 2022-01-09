@@ -1,4 +1,4 @@
-default_template = """# {{ username }}
+default_template = """# {{ user }}
 
 ## github
 
@@ -14,10 +14,12 @@ default_template = """# {{ username }}
 - [{{ item.title}}]({{ item.link }}): {{ item.published_parsed|fmt('YYYY-MM-DD HH:mm:ss')}}
 {%- endfor %}
 
-## qiita
+{% if qiita %}
+## qiita({{ qiita|length }} items)
 
-{% for item in qiita %}
+{%- for item in qiita %}
 - [{{ item.title}}]({{ item.url }}): {{ item.created_at|fmt('YYYY-MM-DD HH:mm:ss')}}
 {%- endfor %}
+{%- endif %}
 
 """

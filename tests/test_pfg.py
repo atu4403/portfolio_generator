@@ -71,4 +71,4 @@ class TestConf:
         yml = c.load(filename)
         assert yml["user"] == "atu4403"
         tpl = (c.dot.search_dir / "portfolio.j2").read_text()
-        assert tpl.startswith("# {{ username }}")
+        assert tpl.startswith("# {{ user }}")

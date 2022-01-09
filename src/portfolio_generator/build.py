@@ -10,13 +10,16 @@ from .pfg import Conf
 
 
 class Build:
-    def __init__(self, path: str = "portfolio.yml", offline: bool = False) -> None:
+    def __init__(
+        self, path: str = "portfolio.yml", offline: bool = False, output: str = ""
+    ) -> None:
         c = Conf()
         self.offline = offline
+        self.output = output
         self.conf = c.load(path)
         self.conf_dir = c.dot.search_dir
         self.cache_dir = c.dot.search_cache_dir
-        self.values = {}
+        self.values = {"user": self.conf.get("user")}
         for key in self.conf.get("names", []):
             self.values[key] = self._get_json(key)
         for key in self.conf.get("apis", []):
@@ -27,7 +30,7 @@ class Build:
         json_path = Path(self.cache_dir) / f"{key}.json"
         if (not json_path.exists()) or (not self.offline):
             if key.startswith("__"):
-                d = conf["apis"][key]
+                d = conf["apis"][key[2:]]
                 j = hub_with_type(d.get("type"), d.get("url"))
             else:
                 j = hub_with_key(key, conf["names"][key])
@@ -41,5 +44,9 @@ class Build:
             env.filters[key] = filter
         template_path = self.conf_dir / self.conf["template"]
         template = env.get_template(str(template_path))
-        ren_s = template.render(self.values)
-        print(ren_s)
+        res = template.render(self.values)
+        if self.output:
+            print("=====", self.values.keys())
+            Path(self.output).write_text(res)
+        else:
+            print(res)

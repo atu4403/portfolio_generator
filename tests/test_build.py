@@ -1,26 +1,54 @@
+import os
 import pytest
 from src.portfolio_generator.build import Build
-from src.portfolio_generator.pfg import Conf
+from src.portfolio_generator.pfg import (
+    Conf,
+    ConfigDirectoryNotExistsError,
+    ConfigFileNotExistsError,
+    InvalidYamlFormatError,
+    TemplateFileNotExistsError,
+)
 
 
 class TestBuild:
+    @pytest.fixture
+    def case1(self):
+        os.chdir("examples/case1")
+        yield
+        os.chdir("../..")
+
+    @pytest.fixture
+    def case2(self):
+        os.chdir("examples/case2")
+        yield
+        os.chdir("../..")
+
     @pytest.fixture
     def d(self, tmpdir) -> str:
         p = tmpdir.chdir()
         yield
         p.chdir()
 
-    # def test_config_not_exists(self):
-    #     with pytest.raises(ConfigNotExistsError) as e:
-    #         b = Build()
-    #     assert "portfolio.yml not exists" in str(e.value)
+    def test_build_case1(self, case1):
+        # Conf().init("atu4403")
+        Build("portfolio.yml", output="README.md", offline=True).execute()
 
-    # def test_invalid_yaml_format(self):
-    #     with pytest.raises(InvalidYamlFormatError) as e:
-    #         b = Build("tests/invalid.yml")
-    #     assert "tests/invalid.yml can not be read" in str(e.value)
-
-    def test_build(self, d):
+    def test_build_tmp(self, d):
         Conf().init("atu4403")
-        b = Build("portfolio.yml")
-        b.execute()
+        Build("portfolio.yml", output="README.md").execute()
+
+    def test_build_ConfigDirectoryNotExistsError(self, d):
+        with pytest.raises(ConfigDirectoryNotExistsError):
+            Build().execute()
+
+    def test_build_ConfigFileNotExistsError(self, case1):
+        with pytest.raises(ConfigFileNotExistsError):
+            Build("portfolio1.yml").execute()
+
+    def test_build_InvalidYamlFormatError(self, case1):
+        with pytest.raises(InvalidYamlFormatError):
+            Build("portfolio2.yml").execute()
+
+    def test_build_TemplateFileNotExistsError(self, case2):
+        with pytest.raises(TemplateFileNotExistsError):
+            Build("portfolio.yml").execute()
