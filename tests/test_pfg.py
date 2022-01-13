@@ -13,45 +13,27 @@ from src.portfolio_generator.pfg import (
 
 
 class TestConf:
-    @pytest.fixture
-    def case1(self):
-        os.chdir("examples/case1")
-        yield
-        os.chdir("../..")
-
-    @pytest.fixture
-    def case2(self):
-        os.chdir("examples/case2")
-        yield
-        os.chdir("../..")
-
-    @pytest.fixture
-    def d(self, tmpdir) -> str:
-        p = tmpdir.chdir()
-        yield
-        p.chdir()
-
     def test_conf(self, case1):
-        # pwd = os.getcwd()
-        # assert pwd == "/Users/atu/ghq/github.com/atu4403/portfolio_generator"
-        # c = Conf()
         assert Pfg().search_dir == pathlib.PosixPath(".pfg")
 
     def test_conf_dir_exists_error(self, case1):
-        with pytest.raises(ConfigDirectoryNotExistsError) as e:
+        with pytest.raises(ConfigExistsError) as e:
             c = Conf()
             c.init("atu4403")
-        assert "config directory already exists." in str(e.value)
+        assert "config ディレクトリはすでに存在します" in str(e.value)
 
     def test_conf_invalid_yaml_1(self, case1):
-        with pytest.raises(InvalidYamlFormatError):
+        with pytest.raises(InvalidYamlFormatError) as e:
             c = Conf()
             c.load("portfolio2.yml")
+        assert "portfolio2.yml invalid: must be of dict type" in str(e.value)
 
     def test_conf_invalid_yaml_2(self, case1):
-        with pytest.raises(InvalidYamlFormatError):
+        with pytest.raises(InvalidYamlFormatError) as e:
             c = Conf()
             c.load("portfolio3.yml")
+        assert "portfolio3.yml invalid: {'no_names': ['unknown field']" in str(e.value)
+        assert "template': ['required field'], 'test': ['unknown field']}" in str(e.value)
 
     def test_conf_file_not_exists(self, case1):
         with pytest.raises(ConfigFileNotExistsError):
@@ -67,7 +49,8 @@ class TestConf:
     def test_init(self, d):
         filename = "portfolio.yml"
         c = Conf()
-        c.init("atu4403")
+        res = c.init("atu4403")
+        assert res.endswith(".pfg")
         yml = c.load(filename)
         assert yml["user"] == "atu4403"
         tpl = (c.dot.search_dir / "portfolio.j2").read_text()

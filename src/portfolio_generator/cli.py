@@ -4,7 +4,8 @@
 # validate --config
 # list ymlファイル,templateのリスト
 import click
-from .pfg import Conf
+from .pfg import Conf, PfgError
+from .build import Build
 
 
 def log_title(s: str) -> None:
@@ -22,11 +23,15 @@ def cli():
 
 
 @cli.command()
-@click.option("-o", "--out", default="", help="output filepath")
 @click.option("-c", "--config", default="portfolio.yml", help="config filepath")
-def build(out, config):
-    log_title("build command")
-    log_error("build command")
+@click.option("-o", "--out", default="", help="output filepath")
+def build(config, out):
+    log_title("build")
+    try:
+        Build(config, out).execute()
+    except PfgError as e:
+        log_error(e)
+        exit(1)
 
 
 @cli.command()
@@ -35,13 +40,24 @@ def build(out, config):
 @click.option("--force", default=False, is_flag=True, help="Forced initialization")
 def init(name, glo, force):
     log_title("init")
-    Conf().init(name, glo, force)
+    try:
+        res = Conf().init(name, glo, force)
+        click.echo(f"initialize config files\n\t{res}")
+    except PfgError as e:
+        log_error(e)
+        exit(1)
 
 
 @cli.command()
 @click.option("-c", "--config", default="portfolio.yml", help="config filepath")
 def validate(config):
-    print("validate command")
+    log_title(f"validate {config}")
+    try:
+        res = Conf().load(config)
+        click.echo(f"{config} is clean")
+    except PfgError as e:
+        log_error(e)
+        exit(1)
 
 
 @cli.command()
@@ -49,5 +65,5 @@ def list():
     print("list command")
 
 
-if __name__ == "__main__":
+def main():
     cli()

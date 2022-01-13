@@ -7,24 +7,35 @@ from .templates import default_template
 from .validate import validate
 
 
-class ConfigExistsError(Exception):
-    pass
+class PfgError(Exception):
+    def __init__(self, arg=""):
+        super().__init__()
+        self.arg = arg
 
 
-class ConfigDirectoryNotExistsError(Exception):
-    pass
+class ConfigExistsError(PfgError):
+    def __str__(self) -> str:
+        return "config ディレクトリはすでに存在します"
 
 
-class ConfigFileNotExistsError(Exception):
-    pass
+class ConfigDirectoryNotExistsError(PfgError):
+    def __str__(self):
+        return "configディレクトリが存在しません。'pfg init'を実行してください"
 
 
-class TemplateFileNotExistsError(Exception):
-    pass
+class ConfigFileNotExistsError(PfgError):
+    def __str__(self) -> str:
+        return f"{self.arg}は存在しません"
 
 
-class InvalidYamlFormatError(Exception):
-    pass
+class TemplateFileNotExistsError(PfgError):
+    def __str__(self) -> str:
+        return f"{self.arg}は存在しません"
+
+
+class InvalidYamlFormatError(PfgError):
+    def __str__(self) -> str:
+        return self.arg
 
 
 class Pfg:
@@ -86,25 +97,24 @@ class Conf:
         if not force and (
             (dot.local_dir.exists() and not glo) or (dot.global_dir.exists() and glo)
         ):
-            raise ConfigDirectoryNotExistsError(
-                "config directory already exists. If you want to overwrite 'Force'Option"
-            )
+            raise ConfigExistsError()
         else:
             dot.mkdir(glo)
             d = dot.global_dir if glo else dot.local_dir
             (d / "portfolio.yml").write_text(self._basic_yaml(name))
             (d / "portfolio.j2").write_text(default_template)
+            return str(d.resolve())
 
     def load(self, yaml_name):
         if d := self.dot.search_dir:
             path = d / yaml_name
             if not path.is_file():
-                raise ConfigFileNotExistsError()
+                raise ConfigFileNotExistsError(yaml_name)
             obj = yaml.load(path.read_text(), Loader=yaml.SafeLoader)
             if v := validate(obj):
-                raise InvalidYamlFormatError(v)
+                raise InvalidYamlFormatError(f"{yaml_name} {v}")
             template_path = obj.get("template")
             if not (d / template_path).exists():
-                raise TemplateFileNotExistsError()
+                raise TemplateFileNotExistsError(yaml_name)
             return obj
         raise ConfigDirectoryNotExistsError()
