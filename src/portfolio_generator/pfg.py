@@ -51,8 +51,9 @@ class Pfg:
 
     @property
     def global_dir(self):
-        d = Path().home() / ".config" / self.PFG
-        return Path(os.getenv("XDG_CONFIG_HOME", d))
+        if os.getenv("XDG_CONFIG_HOME"):
+            return Path(os.getenv("XDG_CONFIG_HOME")) / self.PFG
+        return Path().home() / ".config" / self.PFG
 
     @property
     def search_dir(self):

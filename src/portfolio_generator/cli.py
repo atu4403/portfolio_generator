@@ -34,6 +34,7 @@ def build(config, out):
         exit(1)
 
 
+# TODO: nameをプロンプト化
 @cli.command()
 @click.argument("name")
 @click.option("--glo", default=False, is_flag=True, help="make global settings")
