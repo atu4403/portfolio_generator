@@ -42,11 +42,10 @@ class Build:
         env = Environment(loader=FileSystemLoader("."))
         for key, filter in filters.items():
             env.filters[key] = filter
-        template_path = self.conf_dir / self.conf["template"]
-        template = env.get_template(str(template_path))
+        template_path = str(self.conf_dir / self.conf["template"]).replace(os.path.sep, "/")
+        template = env.get_template(template_path)
         res = template.render(self.values)
         if self.output:
-            print("=====", self.values.keys())
             Path(self.output).write_text(res)
         else:
             print(res)
