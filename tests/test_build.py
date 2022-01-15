@@ -33,6 +33,7 @@ class TestBuild:
         # Conf().init("atu4403")
         Build("portfolio.yml", output="README.md", offline=True).execute()
 
+    @pytest.mark.heavy
     def test_build_tmp(self, d):
         Conf().init("atu4403")
         Build("portfolio.yml", output="README.md").execute()
