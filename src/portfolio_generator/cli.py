@@ -25,19 +25,19 @@ def cli():
 @cli.command()
 @click.option("-c", "--config", default="portfolio.yml", help="config filepath")
 @click.option("-o", "--out", default="", help="output filepath")
-def build(config, out):
+@click.option("--offline", default=False, is_flag=True, help="use cache")
+def build(config, offline, out):
     log_title("build")
     try:
-        Build(config, out).execute()
+        Build(path=config, output=out, offline=offline).execute()
     except PfgError as e:
         log_error(e)
         exit(1)
 
 
-# TODO: nameをプロンプト化
 @cli.command()
-@click.argument("name")
-@click.option("--glo", default=False, is_flag=True, help="make global settings")
+@click.option("-n", "--name", prompt="default account name")
+@click.option("-g", "--glo", default=False, is_flag=True, help="make global settings")
 @click.option("--force", default=False, is_flag=True, help="Forced initialization")
 def init(name, glo, force):
     log_title("init")
