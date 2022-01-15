@@ -22,6 +22,7 @@ jobs:
         with:
           poetry-version: 1.0
       - run: |
+          export PYTHONUTF8=1
           poetry install
           poetry run pytest
         shell: bash
