@@ -14,7 +14,7 @@ from src.portfolio_generator.pfg import (
 
 class TestConf:
     def test_conf(self, case1):
-        assert Pfg().search_dir == pathlib.PosixPath(".pfg")
+        assert str(Pfg().search_dir) == ".pfg"
 
     def test_conf_dir_exists_error(self, case1):
         with pytest.raises(ConfigExistsError) as e:

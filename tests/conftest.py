@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import pytest
 
 
@@ -11,13 +12,17 @@ def d(tmpdir) -> str:
 
 @pytest.fixture(scope="function")
 def case1():
-    os.chdir("examples/case1")
+    cwd = os.getcwd()
+    _dir = Path("examples") / "case1"
+    os.chdir(_dir)
     yield
-    os.chdir("../..")
+    os.chdir(cwd)
 
 
 @pytest.fixture(scope="function")
 def case2():
-    os.chdir("examples/case2")
+    cwd = os.getcwd()
+    _dir = Path("examples") / "case2"
+    os.chdir(_dir)
     yield
-    os.chdir("../..")
+    os.chdir(cwd)
