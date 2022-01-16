@@ -7,18 +7,23 @@ from portfolio_generator.build import Build
 
 class TestCli:
     @pytest.mark.parametrize(
-        "test_args,expected",
+        "test_args",
         [
-            (["build", "-c", "test", "-o", "A.txt"], ["test", "A.txt"]),
-            (["build", "-ctest", "-o", "A.txt"], ["test", "A.txt"]),
-            (["build", "--config", "test", "--out", "A.txt"], ["test", "A.txt"]),
+            (["build", "-c", "test", "-o", "A.txt"]),
+            (["build", "-ctest", "-o", "A.txt"]),
+            (["build", "--config", "test", "--out", "A.txt"]),
         ],
     )
-    def test_build(self, mocker, test_args, expected):
+    def test_build(self, mocker, test_args):
         mock = mocker.patch.object(Build, "__init__", return_value=None)
         res = CliRunner().invoke(cli, args=test_args)
+        mock.assert_called_once_with(**{"offline": False, "output": "A.txt", "path": "test"})
+
+    def test_build_2(self, mocker):
+        mock = mocker.patch.object(Build, "__init__", return_value=None)
+        res = CliRunner().invoke(cli, args=["build", "--offline"])
         print(mock.call_args_list)
-        mock.assert_called_once_with(*expected)
+        mock.assert_called_once_with(**{"offline": True, "output": "", "path": "portfolio.yml"})
 
     def test_help(self):
         res = CliRunner().invoke(cli, args=["--help"])
@@ -28,21 +33,27 @@ class TestCli:
 class TestInit:
     def test_init(self, mocker):
         mock = mocker.patch("portfolio_generator.pfg.Conf.init")
-        res = CliRunner().invoke(cli, args=["init", "atu4403"])
+        res = CliRunner().invoke(cli, args=["init", "-n", "atu4403"])
         assert ("==> init") in res.output
         mock.assert_called_once_with("atu4403", False, False)
 
     def test_init_02(self, mocker):
         mock = mocker.patch("portfolio_generator.pfg.Conf.init")
-        res = CliRunner().invoke(cli, args=["init", "atu4403", "--glo"])
+        res = CliRunner().invoke(cli, args=["init", "-n", "atu4403", "--glo"])
         assert ("==> init") in res.output
         mock.assert_called_once_with("atu4403", True, False)
 
     def test_init_03(self, mocker):
         mock = mocker.patch("portfolio_generator.pfg.Conf.init")
-        res = CliRunner().invoke(cli, args=["init", "atu4403", "--glo", "--force"])
+        res = CliRunner().invoke(cli, args=["init", "-n", "atu4403", "--glo", "--force"])
         assert ("==> init") in res.output
         mock.assert_called_once_with("atu4403", True, True)
+
+    def test_init_04(self, mocker):
+        mock = mocker.patch("portfolio_generator.pfg.Conf.init")
+        res = CliRunner().invoke(cli, args=["init"], input="atu4403")
+        assert ("==> init") in res.output
+        mock.assert_called_once_with("atu4403", False, False)
 
 
 class Testvalidate:

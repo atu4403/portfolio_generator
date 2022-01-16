@@ -11,28 +11,10 @@ from src.portfolio_generator.pfg import (
 
 
 class TestBuild:
-    @pytest.fixture
-    def case1(self):
-        os.chdir("examples/case1")
-        yield
-        os.chdir("../..")
-
-    @pytest.fixture
-    def case2(self):
-        os.chdir("examples/case2")
-        yield
-        os.chdir("../..")
-
-    @pytest.fixture
-    def d(self, tmpdir) -> str:
-        p = tmpdir.chdir()
-        yield
-        p.chdir()
-
     def test_build_case1(self, case1):
-        # Conf().init("atu4403")
         Build("portfolio.yml", output="README.md", offline=True).execute()
 
+    @pytest.mark.heavy
     def test_build_tmp(self, d):
         Conf().init("atu4403")
         Build("portfolio.yml", output="README.md").execute()

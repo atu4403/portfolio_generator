@@ -1,7 +1,9 @@
+import pytest
 import adash as _
 from portfolio_generator.hub import get_json, hub_with_key
 
 
+@pytest.mark.heavy
 def test_qiita():
     j = hub_with_key("qiita", "atu4403")
     k = _.allkeys(j[0])
@@ -41,6 +43,7 @@ def test_qiita():
     ]
 
 
+@pytest.mark.heavy
 def test_github():
     j = hub_with_key("github", "atu4403")
     k = _.allkeys(j[0])
@@ -146,6 +149,7 @@ def test_github():
     ]
 
 
+@pytest.mark.heavy
 def test_zenn():
     j = hub_with_key("zenn", "atu4403")
     k = _.allkeys(j["entries"][0])
