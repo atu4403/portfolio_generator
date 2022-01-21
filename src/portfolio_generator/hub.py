@@ -39,7 +39,7 @@ def hub_github(username: str) -> dict:
 
 
 def hub_zenn(username: str) -> dict:
-    url = f"https://zenn.dev/{username}/feed"
+    url = f"https://zenn.dev/{username}/feed?all=1"
     return get_rss(url)
 
 
