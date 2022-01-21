@@ -1,3 +1,5 @@
+import re
+import time
 import requests
 import warnings
 import xmltodict
@@ -34,12 +36,35 @@ def hub_qiita(username: str) -> dict:
 
 
 def hub_github(username: str) -> dict:
-    url = f"https://api.github.com/users/{username}/repos"
-    return get_json(url)
+    def _next_link(s):
+        res = {}
+        li = s.split(",")
+        for line in li:
+            l = line.strip().split(";")
+            m = re.search(r"rel=\"(\w*)\"", l[1])
+            key = m.group(1)
+            res[key] = l[0][1:-1]
+        return res.get("next")
+
+    url = f"https://api.github.com/users/{username}/repos?per_page=100"
+    res = []
+    while url:
+        r = requests.get(url)
+        if r.status_code != 200:
+            warnings.warn(f"invalid status: {r.status_code} - {url}")
+            return None
+        if link := r.headers.get("Link"):
+            url = _next_link(link)
+            time.sleep(1)
+        else:
+            url = ""
+        res += r.json()
+
+    return res
 
 
 def hub_zenn(username: str) -> dict:
-    url = f"https://zenn.dev/{username}/feed"
+    url = f"https://zenn.dev/{username}/feed?all=1"
     return get_rss(url)
 
 
